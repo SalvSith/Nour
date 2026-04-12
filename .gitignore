@@ -1,0 +1,15 @@
+.DS_Store
+**/.DS_Store
+
+node_modules/
+dist/
+.vite/
+server/node_modules/
+server/dist/
+supabase/.temp/
+
+# Never commit secrets
+.env
+.env.local
+server/.env
+*.env.local

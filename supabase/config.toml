@@ -1,0 +1,9 @@
+# Supabase project configuration.
+# `project_id` is a local alias used by the CLI — it does not need to match
+# your remote project slug.  The actual remote is stored in
+# supabase/.temp/project-ref after you run `supabase link`.
+project_id = "nour"
+
+[functions.emotion]
+# The emotion edge function is called by the browser directly (no auth header).
+verify_jwt = false
