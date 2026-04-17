@@ -93,18 +93,21 @@ function BootLoadingDots() {
 }
 
 export default function App() {
+  // Dev bypass: ?test=1 skips mic requirement for shader testing
+  const devTest = import.meta.env.DEV && new URLSearchParams(location.search).get('test') === '1';
   const [micStream, setMicStream] = useState<MediaStream | null>(null);
   const [isDead, setIsDead] = useState(false);
   const [isFading, setIsFading] = useState(false);
-  const [bootPhase, setBootPhase] = useState<'black' | 'fading' | 'done'>('black');
+  const [bootPhase, setBootPhase] = useState<'black' | 'fading' | 'done'>(devTest ? 'done' : 'black');
   const [showIntro, setShowIntro] = useState(() => {
+    if (devTest) return false;
     try { return localStorage.getItem('nour_intro_seen') !== 'true'; }
     catch { return false; }
   });
-  const [micReady, setMicReady] = useState(false);
+  const [micReady, setMicReady] = useState(devTest);
   const [micDenied, setMicDenied] = useState(false);
   const [soundsReady, setSoundsReady] = useState(false);
-  const [orbVisible, setOrbVisible] = useState(false);
+  const [orbVisible, setOrbVisible] = useState(devTest);
   useWakeLock(orbVisible);
   const [isEuphoric, setIsEuphoric] = useState(false);
   const [sessionExpired, setSessionExpired] = useState(false);
@@ -276,22 +279,25 @@ export default function App() {
       if (engine.isDead()) triggerDeath();
     });
 
-    getMicStream()
-      .then((stream) => {
-        // Attempt AudioContext unlock while still close to the getUserMedia
-        // gesture — helps first-time users on iOS where the mic permission
-        // tap is the only user gesture before the orb appears.
-        soundMgr.tryResume();
-        setMicReady(true);
-        if (deadRef.current) return;
-        setMicStream(stream);
-        capture.init(stream, (blob, mimeType) => {
+    const skipMic = import.meta.env.DEV && new URLSearchParams(location.search).get('test') === '1';
+    if (!skipMic) {
+      getMicStream()
+        .then((stream) => {
+          // Attempt AudioContext unlock while still close to the getUserMedia
+          // gesture — helps first-time users on iOS where the mic permission
+          // tap is the only user gesture before the orb appears.
+          soundMgr.tryResume();
+          setMicReady(true);
           if (deadRef.current) return;
-          lastSpeechRef.current = Date.now();
-          ws.sendAudio(blob, memory.getMessages(), mimeType);
-        });
-      })
-      .catch(() => { setMicDenied(true); setMicReady(true); });
+          setMicStream(stream);
+          capture.init(stream, (blob, mimeType) => {
+            if (deadRef.current) return;
+            lastSpeechRef.current = Date.now();
+            ws.sendAudio(blob, memory.getMessages(), mimeType);
+          });
+        })
+        .catch(() => { setMicDenied(true); setMicReady(true); });
+    }
 
     const neglectInterval = setInterval(() => {
       if (deadRef.current || gameModeRef.current) return;
@@ -352,7 +358,8 @@ export default function App() {
   // Hold the black screen until the intro is done, mic is ready, and enough
   // sounds are loaded. Applies to both first-time and returning visitors.
   useEffect(() => {
-    if (!showIntro && micReady && soundsReady && bootPhase === 'black') {
+    const skipMic = import.meta.env.DEV && new URLSearchParams(location.search).get('test') === '1';
+    if (!showIntro && micReady && (soundsReady || skipMic) && bootPhase === 'black') {
       fadeIn();
     }
   }, [micReady, soundsReady, showIntro, bootPhase, fadeIn]);
