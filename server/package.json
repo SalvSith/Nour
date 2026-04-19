@@ -10,7 +10,7 @@
   "dependencies": {
     "groq-sdk": "^0.18.0",
     "ws": "^8.18.0",
-    "dotenv": "^16.4.0"
+    "dotenv": "^17.4.2"
   },
   "devDependencies": {
     "tsx": "^4.19.0",
