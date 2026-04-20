@@ -1,0 +1,26 @@
+{
+  "name": "orb",
+  "private": true,
+  "license": "MIT",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -n \"server,frontend\" -c \"yellow,cyan\" \"npm run dev --prefix server\" \"vite\"",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "motion": "^12.38.0",
+    "ogl": "^1.0.11",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^6.0.1",
+    "concurrently": "^9.2.1",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.8"
+  }
+}
